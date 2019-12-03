@@ -198,30 +198,30 @@ namespace netDude
 
             font = new Font("Tahoma", (int)numFontSize.Value);
 
-            for (int count = 0; count < 126; count++)
+            for (int from = 0; from < 126; from++)
             {
-                if (!chkNull.isNull(tcpData[count].ip))
+                if (!chkNull.isNull(tcpData[from].ip))
                 {
                     // draw the IP at the xy point of the circle we assigned it
-                    if (tcpData[count].ip == Globals.clsGlobals.hostIP)
-                        gBmp.DrawString(tcpData[count].ip, font, Brushes.Lime, tcpData[count].x, tcpData[count].y);
+                    if (tcpData[from].ip == Globals.clsGlobals.hostIP)
+                        gBmp.DrawString(tcpData[from].ip, font, Brushes.Lime, tcpData[from].x, tcpData[from].y);
                     else
-                        gBmp.DrawString(tcpData[count].ip, font, Brushes.White, tcpData[count].x, tcpData[count].y);
+                        gBmp.DrawString(tcpData[from].ip, font, Brushes.White, tcpData[from].x, tcpData[from].y);
 
                     bool OKToProcess = false;
-                    Pen p = getPen(count, ref OKToProcess);
+                    Pen p = getPen(tcpData[from].protocol, ref OKToProcess);
 
-                    if (OKToProcess && !chkNull.isNull(tcpData[count].dstIP))
+                    if (OKToProcess && !chkNull.isNull(tcpData[from].dstIP))
                     {
-                        for (int i = 0; i < 126; i++)
+                        for (int to = 0; to < 126; to++)
                         {
                             // draw a line from src to dst
-                            if (tcpData[i].ip == tcpData[count].dstIP)
+                            if (tcpData[to].ip == tcpData[from].dstIP)
                             {
-                                clsGlobals.t td = tcpData[count];
-                                clsGlobals.t tdi = tcpData[i];
+                                clsGlobals.t td = tcpData[from];
+                                clsGlobals.t tdi = tcpData[to];
 
-                                if (tcpData[count].topTalker)
+                                if (tcpData[from].topTalker)
                                 {
                                     gBmp.DrawLine(bigPen, td.x, td.y, tdi.x, tdi.y);
                                     // center the top talker circle 
@@ -229,12 +229,10 @@ namespace netDude
                                 }
                                 else
                                 {
-                                    if (tcpData[count].protocol == "IPV4" && raw)
+                                    if (tcpData[from].protocol == "IPV4" && raw)
                                         gBmp.DrawLine(hostPen, td.x, td.y, tdi.x, tdi.y);
                                     else
-                                    {
                                         gBmp.DrawLine(p, td.x, td.y, tdi.x, tdi.y);
-                                    }
                                 }
                                 break;
                             }
@@ -254,11 +252,11 @@ namespace netDude
             }
         }
 
-        private Pen getPen(int count, ref bool OKToProcess)
+        private Pen getPen(string protocol, ref bool OKToProcess)
         {
             // If the protocol is x and we've checked the x checkbox, display it
             Pen p;
-            switch (tcpData[count].protocol)
+            switch (protocol)
             {
                 case "IP":
                     if (ip) OKToProcess = true;
@@ -538,7 +536,7 @@ namespace netDude
                         packet = PacketDotNet.Packet.ParsePacket(p.LinkLayerType, p.Data);
                         tcpPacket = (PacketDotNet.TcpPacket)packet.Extract(typeof(PacketDotNet.TcpPacket));
 
-                        string foo = "";
+                        //string foo = "";
                         if (!chkNull.isNull(tcpPacket))
                         {
                             var ipPacket = (PacketDotNet.IpPacket)tcpPacket.ParentPacket;
@@ -558,7 +556,7 @@ namespace netDude
                                 }
                             }
 
-                            foo= srcIp.ToString();
+                           // foo = srcIp.ToString();
 
                         }
                       
@@ -694,7 +692,6 @@ namespace netDude
                 var max = Globals.clsGlobals.topTalkers.OrderByDescending(d => d.Value).First();
 
                 clearTopTalkers();
-
                 appendTopTalker(max.Key);
 
                 int count = 0;
@@ -798,7 +795,6 @@ namespace netDude
             if (InvokeRequired)
             {
                 this.Invoke(new Action<string>(appendTopTalker), new object[] { value });
-
             }
             else
             {

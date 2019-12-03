@@ -19,121 +19,120 @@ using System.Drawing.Imaging;
 namespace netDude
 {
 
-  public unsafe class FastBitmap
-  {
-    public struct PixelData
+    public unsafe class FastBitmap
     {
-      public byte blue;
-      public byte green;
-      public byte red;
-    }
-
-    Bitmap Subject;
-    int SubjectWidth;
-    BitmapData bitmapData = null;
-    Byte* pBase = null;
-
-    public FastBitmap(Bitmap SubjectBitmap)
-    {
-      this.Subject = SubjectBitmap;
-      try
-      {
-        LockBitmap();
-      }
-      catch (Exception ex)
-      { throw ex; }
-    }
-
-    public void Release()
-    {
-      try
-      {
-        UnlockBitmap();
-      }
-      catch
-      {
-
-      }
-    }
-
-    public Bitmap Bitmap
-    {
-      get
-      {
-        return Subject;
-      }
-    }
-
-    public void SetPixel(int X, int Y, Color Colour)
-    {
-      try
-      {
-        PixelData* p = PixelAt(X, Y);
-        p->red = Colour.R;
-        p->green = Colour.G;
-        p->blue = Colour.B;
-      }
-      catch (AccessViolationException ave)
-      {
-        //throw (ave); 
-      }
-      catch (Exception ex)
-      {
-        // throw ex; 
-      }
-    }
-
-    public Color GetPixel(int X, int Y)
-    {
-      try
-      {
-        PixelData* p = PixelAt(X, Y);
-        return Color.FromArgb((int)p->red, (int)p->green, (int)p->blue);
-      }
-      catch (AccessViolationException ave)
-      {
-        throw (ave);
-      }
-      catch (Exception ex)
-      {
-        throw ex;
-      }
-    }
-
-    private void LockBitmap()
-    {
-      try
-      {
-        GraphicsUnit unit = GraphicsUnit.Pixel;
-        RectangleF boundsF = Subject.GetBounds(ref unit);
-        Rectangle bounds = new Rectangle((int)boundsF.X, (int)boundsF.Y, (int)boundsF.Width, (int)boundsF.Height);
-        SubjectWidth = (int)boundsF.Width * sizeof(PixelData);
-        if (SubjectWidth % 4 != 0)
+        public struct PixelData
         {
-          SubjectWidth = 4 * (SubjectWidth / 4 + 1);
+            public byte blue;
+            public byte green;
+            public byte red;
         }
-        bitmapData = Subject.LockBits(bounds, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
-        pBase = (Byte*)bitmapData.Scan0.ToPointer();
-      }
-      catch (Exception)
-      {
 
-        throw;
-      }
-    }
+        Bitmap Subject;
+        int SubjectWidth;
+        BitmapData bitmapData = null;
+        Byte* pBase = null;
 
-    private PixelData* PixelAt(int x, int y)
-    {
-      return (PixelData*)(pBase + y * SubjectWidth + x * sizeof(PixelData));
-    }
+        public FastBitmap(Bitmap SubjectBitmap)
+        {
+            this.Subject = SubjectBitmap;
+            try
+            {
+                LockBitmap();
+            }
+            catch (Exception ex)
+            { throw ex; }
+        }
 
-    private void UnlockBitmap()
-    {
-      Subject.UnlockBits(bitmapData);
-      bitmapData = null;
-      pBase = null;
+        public void Release()
+        {
+            try
+            {
+                UnlockBitmap();
+            }
+            catch
+            {
+            }
+        }
+
+        public Bitmap Bitmap
+        {
+            get
+            {
+                return Subject;
+            }
+        }
+
+        public void SetPixel(int X, int Y, Color Colour)
+        {
+            try
+            {
+                PixelData* p = PixelAt(X, Y);
+                p->red = Colour.R;
+                p->green = Colour.G;
+                p->blue = Colour.B;
+            }
+            catch (AccessViolationException ave)
+            {
+                //throw (ave); 
+            }
+            catch (Exception ex)
+            {
+                // throw ex; 
+            }
+        }
+
+        public Color GetPixel(int X, int Y)
+        {
+            try
+            {
+                PixelData* p = PixelAt(X, Y);
+                return Color.FromArgb((int)p->red, (int)p->green, (int)p->blue);
+            }
+            catch (AccessViolationException ave)
+            {
+                throw (ave);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        private void LockBitmap()
+        {
+            try
+            {
+                GraphicsUnit unit = GraphicsUnit.Pixel;
+                RectangleF boundsF = Subject.GetBounds(ref unit);
+                Rectangle bounds = new Rectangle((int)boundsF.X, (int)boundsF.Y, (int)boundsF.Width, (int)boundsF.Height);
+                SubjectWidth = (int)boundsF.Width * sizeof(PixelData);
+                if (SubjectWidth % 4 != 0)
+                {
+                    SubjectWidth = 4 * (SubjectWidth / 4 + 1);
+                }
+                bitmapData = Subject.LockBits(bounds, ImageLockMode.ReadWrite, PixelFormat.Format24bppRgb);
+                pBase = (Byte*)bitmapData.Scan0.ToPointer();
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
+
+        private PixelData* PixelAt(int x, int y)
+        {
+            return (PixelData*)(pBase + y * SubjectWidth + x * sizeof(PixelData));
+        }
+
+        private void UnlockBitmap()
+        {
+            Subject.UnlockBits(bitmapData);
+            bitmapData = null;
+            pBase = null;
+        }
     }
-  }
 }
 
 
